@@ -80,8 +80,8 @@ export default function Lanches() {
       title: '💰 Preço', 
       dataIndex: 'preco', 
       key: 'preco', 
-      render: (valor) => `R$ ${valor.toFixed(2)}`,
-      sorter: (a, b) => a.preco - b.preco
+      render: (valor) => valor != null ? `R$ ${valor.toFixed(2)}` : 'R$ 0,00',
+      sorter: (a, b) => (a.preco || 0) - (b.preco || 0)
     },
     { 
       title: '📦 Estoque Mínimo', 

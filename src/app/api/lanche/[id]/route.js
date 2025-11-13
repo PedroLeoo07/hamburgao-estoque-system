@@ -6,9 +6,14 @@ const prisma = new PrismaClient();
 export async function PUT(request, { params }) {
   try {
     const { id } = await params;
+    const { nome, preco, estoque_minimo } = await request.json();
     const lanche = await prisma.lanche.update({
       where: { id: parseInt(id) },
-      data: await request.json(),
+      data: {
+        nome,
+        preco: preco ? parseFloat(preco) : null,
+        estoque_minimo: parseInt(estoque_minimo)
+      },
     });
     return NextResponse.json(lanche);
   } catch (error) {

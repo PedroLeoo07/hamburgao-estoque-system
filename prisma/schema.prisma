@@ -17,6 +17,7 @@ model Usuario {
 model Lanche {
   id             Int            @id @default(autoincrement())
   nome           String
+  preco          Float?
   estoque_minimo Int?           @default(0)
   movimentacao   Movimentacao[]
 }

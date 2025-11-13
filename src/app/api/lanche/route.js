@@ -14,9 +14,13 @@ export async function GET() {
 
 export async function POST(request) {
   try {
-    const { nome, estoque_minimo } = await request.json();
+    const { nome, preco, estoque_minimo } = await request.json();
     const lanche = await prisma.lanche.create({
-      data: { nome, estoque_minimo: parseInt(estoque_minimo) },
+      data: { 
+        nome, 
+        preco: preco ? parseFloat(preco) : null,
+        estoque_minimo: parseInt(estoque_minimo) 
+      },
     });
     return NextResponse.json(lanche);
   } catch {
