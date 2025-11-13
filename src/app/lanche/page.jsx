@@ -76,12 +76,11 @@ export default function Lanches() {
       key: 'nome',
       sorter: (a, b) => a.nome.localeCompare(b.nome)
     },
-    { 
-      title: '💰 Preço', 
-      dataIndex: 'preco', 
-      key: 'preco', 
-      render: (valor) => valor != null ? `R$ ${valor.toFixed(2)}` : 'R$ 0,00',
-      sorter: (a, b) => (a.preco || 0) - (b.preco || 0)
+    {
+      key: 'preco',
+      title: 'Preço',
+      dataIndex: 'preco',
+      render: (valor) => valor != null ? `R$ ${parseFloat(valor).toFixed(2)}` : 'N/A'
     },
     { 
       title: '📦 Estoque Mínimo', 
