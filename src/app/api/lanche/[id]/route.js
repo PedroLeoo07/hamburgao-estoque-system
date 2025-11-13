@@ -5,22 +5,23 @@ const prisma = new PrismaClient();
 
 export async function PUT(request, { params }) {
   try {
-    // extrai o id dos parâmetros da rota
-    // atualiza o lanche no banco de dados com os dados do corpo da requisição
-    return NextResponse.json(lanche); // retorna o lanche atualizado
+    const { id } = await params;
+    const lanche = await prisma.lanche.update({
+      where: { id: parseInt(id) },
+      data: await request.json(),
+    });
+    return NextResponse.json(lanche);
   } catch (error) {
-    // se der erro, retorna erro 500 com mensagem apropriada
     return NextResponse.json({ erro: 'Erro ao atualizar lanche' }, { status: 500 });
   }
 }
 
 export async function DELETE(request, { params }) {
   try {
-    // extrai o id dos parâmetros da rota
-    // deleta o lanche do banco de dados
-    return NextResponse.json({ sucesso: true }); // retorna sucesso
+    const { id } = await params;
+    await prisma.lanche.delete({ where: { id: parseInt(id) } });
+    return NextResponse.json({ sucesso: true });
   } catch (error) {
-    // se der erro, retorna erro 500 com mensagem apropriada
     return NextResponse.json({ erro: 'Erro ao deletar lanche' }, { status: 500 });
   }
 }

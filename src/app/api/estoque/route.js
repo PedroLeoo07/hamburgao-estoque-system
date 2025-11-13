@@ -3,32 +3,53 @@ import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
-// Função para calcular o estoque atual com base nas movimentações, seja de entrada ou saída
-// Se o tipo for 'entrada', soma a quantidade; se for 'saída', subtrai a quantidade
+const calcularEstoque = (movimentacoes) =>
+  movimentacoes.reduce(
+    (total, m) => total + (m.tipo === 'entrada' ? m.quantidade : -m.quantidade),
+    0,
+  );
 
 export async function GET() {
   try {
-    // busca todos os lanches com suas movimentações
-    // mapeia os lanches para retornar apenas os campos necessários
-    // calcula o estoque atual usando a função calcularEstoque
-    return NextResponse.json(lanches); // retorna a lista de lanches com id, nome, estoque_minimo e estoque_atual
+    const lanches = await prisma.lanche.findMany({ include: { movimentacao: true } });
+    return NextResponse.json({
+      lanches: lanches.map((l) => ({
+        id: l.id,
+        nome: l.nome,
+        estoque_minimo: l.estoque_minimo,
+        estoque_atual: calcularEstoque(l.movimentacao),
+      })),
+    });
   } catch (error) {
-    // se der erro, retorna erro 500 com mensagem apropriada
     return NextResponse.json({ erro: 'Erro ao buscar estoque' }, { status: 500 });
   }
 }
 
 export async function POST(request) {
   try {
-    // extrai os dados do corpo da requisição
-    // busca o lanche pelo id com suas movimentações
-    // se o lanche não existir, retorna erro 404
-    // cria uma nova movimentação no banco de dados
-    // calcula o estoque atual do lanche
-    // verifica se deve gerar um alerta (saída e estoque abaixo do mínimo)
-    return NextResponse.json({ sucesso: true, estoqueAtual, alerta }); // retorna sucesso, estoqueAtual e alerta se necessário
+    const { lanche_id, usuario_id, tipo, quantidade, data_movimentacao } = await request.json();
+    const lanche = await prisma.lanche.findUnique({
+      where: { id: parseInt(lanche_id) },
+      include: { movimentacao: true },
+    });
+
+    await prisma.movimentacao.create({
+      data: {
+        lancheId: parseInt(lanche_id),
+        usuarioId: parseInt(usuario_id),
+        tipo,
+        quantidade: parseInt(quantidade),
+        ...(data_movimentacao && { data: new Date(data_movimentacao) }),
+      },
+    });
+
+    const estoqueAtual =
+      calcularEstoque(lanche.movimentacao) +
+      (tipo === 'entrada' ? parseInt(quantidade) : -parseInt(quantidade));
+    const alerta = tipo === 'saida' && estoqueAtual < lanche.estoque_minimo;
+
+    return NextResponse.json({ sucesso: true, estoqueAtual, alerta });
   } catch (error) {
-    // se der erro, retorna erro 500 com mensagem apropriada
     return NextResponse.json({ erro: 'Erro ao registrar movimentação' }, { status: 500 });
   }
 }

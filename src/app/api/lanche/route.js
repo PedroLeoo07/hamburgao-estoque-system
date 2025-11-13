@@ -5,21 +5,21 @@ const prisma = new PrismaClient();
 
 export async function GET() {
   try {
-    // busca todos os lanches
-    return NextResponse.json(lanches); // retorna a lista de lanches
+    const lanches = await prisma.lanche.findMany();
+    return NextResponse.json(lanches);
   } catch {
-    // se der erro, retorna erro 500 com mensagem apropriada
     return NextResponse.json({ erro: 'Erro ao buscar lanches' }, { status: 500 });
   }
 }
 
 export async function POST(request) {
   try {
-    // extrai os dados do corpo da requisição
-    // cria um novo lanche no banco de dados
-    return NextResponse.json(lanche); // retorna o lanche criado
+    const { nome, estoque_minimo } = await request.json();
+    const lanche = await prisma.lanche.create({
+      data: { nome, estoque_minimo: parseInt(estoque_minimo) },
+    });
+    return NextResponse.json(lanche);
   } catch {
-    // se der erro, retorna erro 500 com mensagem apropriada
     return NextResponse.json({ erro: 'Erro ao criar lanche' }, { status: 500 });
   }
 }
