@@ -1,0 +1,33 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Usuario {
+  id           Int            @id @default(autoincrement())
+  nome         String         @unique
+  senha        String
+  movimentacao Movimentacao[]
+}
+
+model Lanche {
+  id             Int            @id @default(autoincrement())
+  nome           String
+  estoque_minimo Int?           @default(0)
+  movimentacao   Movimentacao[]
+}
+
+model Movimentacao {
+  id         Int       @id @default(autoincrement())
+  tipo       String
+  quantidade Int
+  data       DateTime? @default(now())
+  usuarioId  Int
+  lancheId   Int
+  usuario    Usuario   @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  lanche     Lanche?   @relation(fields: [lancheId], references: [id], onDelete: Cascade)
+}
